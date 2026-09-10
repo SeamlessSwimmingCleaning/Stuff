@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Stuff Clone</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111111;
+            --accent-color: #555555;
+            --border-color: #eaeaea;
+            --sidebar-bg: #f9f9f9;
+            --hover-color: #f0f0f0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0b0b0b;
+                --text-color: #f5f5f5;
+                --accent-color: #aaaaaa;
+                --border-color: #222222;
+                --sidebar-bg: #141414;
+                --hover-color: #1c1c1c;
+            }
+        }
+
+        body.midnight-mode {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-color: #888888;
+            --border-color: #151515;
+            --sidebar-bg: #050505;
+            --hover-color: #111111;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            padding: 15px 20px 5px 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .list-container {
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+        
+        #folders-container {
+            flex: 1;
+        }
+
+        .sidebar-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: var(--hover-color);
+        }
+
+        .sidebar-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-item .delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .sidebar-item:hover .delete-btn {
+            opacity: 0.6;
+        }
+
+        /* Main Workspace Content */
+        #main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            background-color: var(--bg-color);
+        }
+
+        header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-toggle {
+            font-size: 1.4rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            display: none;
+        }
+
+        #current-view-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Task Engine UI */
+        .task-input-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"], input[type="date"], select {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+        
+        select {
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        select option {
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+        }
+
+        .btn {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #task-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Task Grouping Sections Styling */
+        .task-group-section {
+            margin-bottom: 25px;
+        }
+
+        .task-group-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent-color);
+            font-weight: 700;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            border-bottom: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-section-btn {
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .task-group-header:hover .delete-section-btn {
+            opacity: 1;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 15px;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task-item.completed .task-checkbox {
+            background-color: var(--accent-color);
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1.05rem;
+            cursor: pointer;
+        }
+
+        .task-date-badge {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            background-color: var(--hover-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .task-date-badge.past-due {
+            color: #ff4444;
+            background-color: rgba(255, 68, 68, 0.1);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 12px;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Settings UI Panel */
+        #settings-panel {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--sidebar-bg);
+            border-top: 1px solid var(--border-color);
+            transition: bottom 0.3s ease;
+            padding: 25px;
+            z-index: 20;
+        }
+
+        #settings-panel.open {
+            bottom: 0;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            #sidebar {
+                position: absolute;
+                left: -280px;
+                height: 100%;
+            }
+            #sidebar.open {
+                transform: translateX(280px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Element containing Folders and Day View Filters -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <span>STUFF WEB</span>
+            <span id="settings-trigger" style="cursor:pointer;">⚙︎</span>
+        </div>
+        
+        <div class="section-title">Days & Filters</div>
+        <div class="list-container" id="days-filters-container">
+            <div class="sidebar-item active" data-filter="all">
+                <div class="sidebar-item-left"><span>📋</span> <span>All Days</span></div>
+            </div>
+            <div class="sidebar-item" data-filter="pastdue">
+                <div class="sidebar-item-left"><span>⚠️</span> <span>Past Due</span></div>
+            </div>
+            <div class="sidebar-item" data-filter="today">
+                <div class="sidebar-item-left"><span>☀️</span> <span>Today</span></div>
+            </div>
+            <div class="sidebar-item" data-filter="tomorrow">
+                <div class="sidebar-item-left"><span>🌅</span> <span>Tomorrow</span></div>
+            </div>
+            <div class="sidebar-item" data-filter="upcoming">
+                <div class="sidebar-item-left"><span>🔮</span> <span>Upcoming</span></div>
+            </div>
+            <div class="sidebar-item" data-filter="someday">
+                <div class="sidebar-item-left"><span>☽</span> <span>Someday</span></div>
+            </div>
+        </div>
+
+        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Folders</span>
+            <span id="add-folder-trigger" style="cursor:pointer; font-size: 1.2rem;">+</span>
+        </div>
+        <div class="list-container" id="folders-container">
+            <!-- Dynamic Custom Folders go here -->
+        </div>
+    </div>
+
+    <!-- Main Active Workspace View Wrapper -->
+    <div id="main-content">
+        <header>
+            <button class="menu-toggle" id="sidebar-toggle">☰</button>
+            <div id="current-view-title">Personal / All Days</div>
+            <button class="btn" id="add-section-btn" style="padding: 6px 12px; font-size: 0.85rem;">+ New Section</button>
+        </header>
+
+        <!-- New Task Creation Row Component -->
+        <div class="task-input-container">
+            <div class="input-row">
+                <input type="text" id="task-input" placeholder="Add a new task assignment...">
+                <select id="task-section-select">
+                    <option value="">General Tasks</option>
+                </select>
+                <input type="date" id="task-date">
+                <button class="btn" id="add-task-btn">Add</button>
+            </div>
+        </div>
+
+        <!-- Rendered Active Task List Row Canvas -->
+        <div id="task-list"></div>
+
+        <!-- Settings Drawer Overlay View Container -->
+        <div id="settings-panel">
+            <h3 style="margin-bottom: 15px;">Preferences</h3>
+            <div class="settings-row">
+                <span>Midnight Dark Theme</span>
+                <input type="checkbox" id="midnight-toggle">
+            </div>
+            <div class="settings-row">
+                <span>Daily Auto Rollover Engine</span>
+                <input type="checkbox" id="rollover-toggle" checked>
+            </div>
+            <button class="btn" style="margin-top: 15px; width: 100%; background: #bd2130;" id="wipe-cache-btn">Wipe Local Cache Storage</button>
+            <button class="btn" style="margin-top: 10px; width: 100%;" id="close-settings-btn">Close Drawer View</button>
+        </div>
+    </div>
+
+    <script>
+        // State Machine Initial Store Objects Loading from Browser Cache Hooks
+        let state = {
+            folders: JSON.parse(localStorage.getItem('stuff_folders')) || [{id: 'f1', name: 'Personal', emoji: '📁'}, {id: 'f2', name: 'Work', emoji: '💼'}],
+            sections: JSON.parse(localStorage.getItem('stuff_sections')) || [
+                {id: 's1', folderId: 'f1', name: 'Trees'},
+                {id: 's2', folderId: 'f1', name: 'Fruit'}
+            ],
+            tasks: JSON.parse(localStorage.getItem('stuff_tasks')) || [],
+            currentFolderId: 'f1',
+            currentDayFilter: 'all',
+            midnightMode: JSON.parse(localStorage.getItem('stuff_midnight')) || false
+        };
+
+        // Initialize App UI States & Explicit Event Bindings
+        function initApp() {
+            if (state.midnightMode) {
+                document.body.classList.add('midnight-mode');
+                document.getElementById('midnight-toggle').checked = true;
+            }
+            
+            // Programmatic Event Bindings to fix unclickable elements
+            document.getElementById('settings-trigger').addEventListener('click', toggleSettings);
+            document.getElementById('close-settings-btn').addEventListener('click', toggleSettings);
+            document.getElementById('add-folder-trigger').addEventListener('click', createNewFolder);
+            document.getElementById('add-section-btn').addEventListener('click', createNewSection);
+            document.getElementById('add-task-btn').addEventListener('click', addNewTask);
+            document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+            document.getElementById('midnight-toggle').addEventListener('change', toggleMidnightMode);
+            document.getElementById('wipe-cache-btn').addEventListener('click', clearAllData);
+            
+            // Bind timeline filter rows
+            document.querySelectorAll('#days-filters-container .sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    setDayFilter(this.getAttribute('data-filter'), this);
+                });
+            });
+
+            renderFolders();
+            updateSectionDropdown();
+            renderTasks();
+            setupAutoRollover();
+        }
+
+        // Setup Automatic Rollover System Engine Lookahead
+        function setupAutoRollover() {
+            const lastCheck = localStorage.getItem('stuff_last_date_check');
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            if (lastCheck && lastCheck !== todayStr && document.getElementById('rollover-toggle').checked) {
+                state.tasks.forEach(task => {
+                    if (!task.completed && task.date && task.date < todayStr) {
+                        task.date = todayStr; // Automatically push past unfinished tasks to current today
+                    }
+                });
+                saveToLocalStorage();
+            }
+            localStorage.setItem('stuff_last_date_check', todayStr);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('stuff_folders', JSON.stringify(state.folders));
+            localStorage.setItem('stuff_sections', JSON.stringify(state.sections));
+            localStorage.setItem('stuff_tasks', JSON.stringify(state.tasks));
+            localStorage.setItem('stuff_midnight', JSON.stringify(state.midnightMode));
+        }
+
+        // Render Folder Engine Elements dynamically into the DOM
+        function renderFolders() {
+            const container = document.getElementById('folders-container');
+            container.innerHTML = '';
+            
+            state.folders.forEach(folder => {
+                const div = document.createElement('div');
+                div.className = `sidebar-item ${folder.id === state.currentFolderId ? 'active' : ''}`;
+                
+                div.addEventListener('click', () => selectFolder(folder.id));
+                
+                div.innerHTML = `
+                    <div class="sidebar-item-left">
+                        <span>${folder.emoji || '📁'}</span>
+                        <span class="folder-name">${folder.name}</span>
+                    </div>
+                    <span class="delete-btn">⌫</span>
+                `;
+                
+                // Separate binding for internal delete to prevent event bubble popping
+                div.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteFolder(folder.id);
+                });
+                
+                container.appendChild(div);
+            });
+            updateHeaderTitle();
+        }
+
+        function createNewFolder() {
+            const emoji = prompt("Choose an emoji symbol icon for this folder:", "📁");
+            const name = prompt("Enter custom folder name:");
+            if (!name) return;
+            
+            const newFolder = { 
+                id: 'f_' + Date.now(), 
+                name: name,
+                emoji: emoji || '📁'
+            };
+            state.folders.push(newFolder);
+            state.currentFolderId = newFolder.id;
+            saveToLocalStorage();
+            renderFolders();
+            updateSectionDropdown();
+            renderTasks();
+        }
+
+        function deleteFolder(id) {
+            if (state.folders.length <= 1) return alert("You must preserve at least one active workspace folder.");
+            if (confirm("Permanently drop this folder element along with its sections and tasks?")) {
+                state.folders = state.folders.filter(f => f.id !== id);
+                state.sections = state.sections.filter(s => s.folderId !== id);
+                state.tasks = state.tasks.filter(t => t.folderId !== id);
+                if (state.currentFolderId === id) state.currentFolderId = state.folders[0].id;
+                saveToLocalStorage();
+                renderFolders();
+                updateSectionDropdown();
+                renderTasks();
+            }
+        }
+
+        function createNewSection() {
+            if (!state.currentFolderId) return alert("Please select or create a folder first.");
+            const name = prompt("Enter new section name (e.g. Trees, Fruit):");
+            if (!name || !name.trim()) return;
+
+            const newSection = {
+                id: 's_' + Date.now(),
+                folderId: state.currentFolderId,
+                name: name.trim()
+            };
+            state.sections.push(newSection);
+            saveToLocalStorage();
+            updateSectionDropdown();
+            renderTasks();
+        }
+
+        function deleteSection(sectionId, name) {
+            if (confirm(`Permanently remove the section "${name}"? Tasks inside will move to General Tasks.`)) {
+                state.sections = state.sections.filter(s => s.id !== sectionId);
+                state.tasks.forEach(t => {
+                    if (t.sectionId === sectionId) t.sectionId = '';
+                });
+                saveToLocalStorage();
+                updateSectionDropdown();
+                renderTasks();
+            }
+        }
+
+        function updateSectionDropdown() {
+            const select = document.getElementById('task-section-select');
+            select.innerHTML = '<option value="">General Tasks</option>';
+            
+            const folderSections = state.sections.filter(s => s.folderId === state.currentFolderId);
+            folderSections.forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec.id;
+                opt.textContent = sec.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function selectFolder(id) {
+            state.currentFolderId = id;
+            renderFolders();
+            updateSectionDropdown();
+            renderTasks();
+            if(window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function setDayFilter(filter, element) {
+            state.currentDayFilter = filter;
+            document.querySelectorAll('#days-filters-container .sidebar-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            renderTasks();
+            if(window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function updateHeaderTitle() {
+            const folder = state.folders.find(f => f.id === state.currentFolderId);
+            const folderName = folder ? folder.name : '';
+            
+            let filterName = state.currentDayFilter;
+            if (filterName === 'all') filterName = 'All Days';
+            if (filterName === 'pastdue') filterName = 'Past Due';
+            if (filterName === 'today') filterName = 'Today';
+            if (filterName === 'tomorrow') filterName = 'Tomorrow';
+            if (filterName === 'upcoming') filterName = 'Upcoming';
+            if (filterName === 'someday') filterName = 'Someday';
+            
+            document.getElementById('current-view-title').innerText = `${folderName} / ${filterName}`;
+        }
+
+        // Render Task Elements cleanly down organized by custom sections
+        function renderTasks() {
+            updateHeaderTitle();
+            const container = document.getElementById('task-list');
+            container.innerHTML = '';
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const tomorrowObj = new Date();
+            tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+            const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
+
+            // Primary Pipeline Filtering Engine Layout Logic
+            let filteredTasks = state.tasks.filter(t => t.folderId === state.currentFolderId);
+
+            if (state.currentDayFilter === 'today') {
+                filteredTasks = filteredTasks.filter(t => t.date === todayStr);
+            } else if (state.currentDayFilter === 'tomorrow') {
+                filteredTasks = filteredTasks.filter(t => t.date === tomorrowStr);
+            } else if (state.currentDayFilter === 'someday') {
+                filteredTasks = filteredTasks.filter(t => !t.date);
+            } else if (state.currentDayFilter === 'pastdue') {
+                filteredTasks = filteredTasks.filter(t => t.date && t.date < todayStr && !t.completed);
+            } else if (state.currentDayFilter === 'upcoming') {
+                filteredTasks = filteredTasks.filter(t => t.date && t.date > tomorrowStr);
+            }
+
+            const currentFolderSections = state.sections.filter(s => s.folderId === state.currentFolderId);
+            
+            // 1. Render Registered Sections
+            currentFolderSections.forEach(section => {
+                const sectionTasks = filteredTasks.filter(t => t.sectionId === section.id);
+                renderTaskGroup(container, section.name, section.id, sectionTasks, todayStr, tomorrowStr);
+            });
+
+            // 2. Render Unassigned / General Tasks Group
+            const generalTasks = filteredTasks.filter(t => !t.sectionId || !currentFolderSections.some(s => s.id === t.sectionId));
+            if (generalTasks.length > 0 || currentFolderSections.length === 0) {
+                renderTaskGroup(container, "General Tasks", "", generalTasks, todayStr, tomorrowStr);
+            }
+        }
+
+        function renderTaskGroup(parentContainer, groupName, sectionId, groupTasks, todayStr, tomorrowStr) {
+            if (groupTasks.length === 0 && sectionId === "") return; // Hide general group if empty when custom sections exist
+
+            const groupWrapper = document.createElement('div');
+            groupWrapper.className = 'task-group-section';
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'task-group-header';
+            headerDiv.innerHTML = `<span>${groupName}</span>`;
+            
+            if (sectionId !== "") {
+                const deleteBtn = document.createElement('span');
+                deleteBtn.className = 'delete-section-btn';
+                deleteBtn.textContent = '✕ Remove Section';
+                deleteBtn.addEventListener('click', () => deleteSection(sectionId, groupName));
+                headerDiv.appendChild(deleteBtn);
+            }
+            
+            groupWrapper.appendChild(headerDiv);
+
+            if (groupTasks.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.cssText = 'color: var(--accent-color); font-size: 0.9rem; padding: 10px;';
+                emptyMsg.textContent = 'No tasks in this section.';
+                groupWrapper.appendChild(emptyMsg);
+            } else {
+                groupTasks.forEach(task => {
+                    const div = document.createElement('div');
+                    div.className = `task-item ${task.completed ? 'completed' : ''}`;
+                    
+                    let isPastDue = task.date && task.date < todayStr && !task.completed;
+                    let displayBadge = task.date ? task.date : 'Someday';
+                    if (task.date === todayStr) displayBadge = 'Today';
+                    if (task.date === tomorrowStr) displayBadge = 'Tomorrow';
+
+                    div.innerHTML = `
+                        <div class="task-checkbox"></div>
+                        <div class="task-text">${task.text}</div>
+                        <div class="task-date-badge ${isPastDue ? 'past-due' : ''}">${displayBadge}</div>
+                        <div class="task-actions">
+                            <span class="action-icon delete-task-btn" title="Delete Task Row">⌫</span>
+                        </div>
+                    `;
+                    
+                    div.querySelector('.task-checkbox').addEventListener('click', () => toggleTaskCompletion(task.id));
+                    div.querySelector('.task-text').addEventListener('click', () => editTaskInline(task.id));
+                    div.querySelector('.delete-task-btn').addEventListener('click', () => deleteTask(task.id));
+                    
+                    groupWrapper.appendChild(div);
+                });
+            }
+
+            parentContainer.appendChild(groupWrapper);
+        }
+
+        function addNewTask() {
+            const textInput = document.getElementById('task-input');
+            const dateInput = document.getElementById('task-date');
+            const sectionSelect = document.getElementById('task-section-select');
+            if (!textInput.value.trim()) return;
+
+            const newTask = {
+                id: 't_' + Date.now(),
+                folderId: state.currentFolderId,
+                sectionId: sectionSelect.value || '',
+                text: textInput.value.trim(),
+                date: dateInput.value || null,
+                completed: false
+            };
+
+            state.tasks.push(newTask);
+            saveToLocalStorage();
+            textInput.value = '';
+            dateInput.value = '';
+            renderTasks();
+        }
+
+        function toggleTaskCompletion(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveToLocalStorage();
+                renderTasks();
+            }
+        }
+
+        // Inline Text Editing Engine
+        function editTaskInline(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+            const updatedText = prompt("Edit task item name:", task.text);
+            if (updatedText && updatedText.trim()) {
+                task.text = updatedText.trim();
+                saveToLocalStorage();
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            state.tasks = state.tasks.filter(t => t.id !== id);
+            saveToLocalStorage();
+            renderTasks();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function toggleSettings() {
+            document.getElementById('settings-panel').classList.toggle('open');
+        }
+
+        function toggleMidnightMode() {
+            state.midnightMode = !state.midnightMode;
+            document.body.classList.toggle('midnight-mode', state.midnightMode);
+            saveToLocalStorage();
+        }
+
+        function clearAllData() {
+            if (confirm("Completely wipe out all browser cache storage records? This cannot be undone.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
