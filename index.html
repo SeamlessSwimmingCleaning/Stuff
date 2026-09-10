@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Stuff Clone</title>
+    <title>Stuff</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -52,7 +52,6 @@
             overflow: hidden;
         }
 
-        /* Sidebar Styling */
         #sidebar {
             width: 280px;
             background-color: var(--sidebar-bg);
@@ -123,7 +122,6 @@
             opacity: 0.6;
         }
 
-        /* Main Workspace Content */
         #main-content {
             flex: 1;
             display: flex;
@@ -156,7 +154,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* Task Engine UI */
         .task-input-container {
             padding: 20px;
             display: flex;
@@ -210,7 +207,6 @@
             padding: 20px;
         }
 
-        /* Task Grouping Sections Styling */
         .task-group-section {
             margin-bottom: 25px;
         }
@@ -303,7 +299,6 @@
             font-size: 1.1rem;
         }
 
-        /* Settings UI Panel */
         #settings-panel {
             position: absolute;
             bottom: -100%;
@@ -328,7 +323,6 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             #sidebar {
@@ -344,14 +338,13 @@
 </head>
 <body>
 
-    <!-- Sidebar Element containing Folders and Day View Filters -->
     <div id="sidebar">
         <div class="sidebar-header">
-            <span>STUFF WEB</span>
+            <span>Stuff</span>
             <span id="settings-trigger" style="cursor:pointer;">⚙︎</span>
         </div>
         
-        <div class="section-title">Days & Filters</div>
+        <div class="section-title">Filters</div>
         <div class="list-container" id="days-filters-container">
             <div class="sidebar-item active" data-filter="all">
                 <div class="sidebar-item-left"><span>📋</span> <span>All Days</span></div>
@@ -360,10 +353,10 @@
                 <div class="sidebar-item-left"><span>⚠️</span> <span>Past Due</span></div>
             </div>
             <div class="sidebar-item" data-filter="today">
-                <div class="sidebar-item-left"><span>☀️</span> <span>Today</span></div>
+                <div class="sidebar-item-left"><span>🌤️</span> <span>Today</span></div>
             </div>
             <div class="sidebar-item" data-filter="tomorrow">
-                <div class="sidebar-item-left"><span>🌅</span> <span>Tomorrow</span></div>
+                <div class="sidebar-item-left"><span>🗓️</span> <span>Tomorrow</span></div>
             </div>
             <div class="sidebar-item" data-filter="upcoming">
                 <div class="sidebar-item-left"><span>🔮</span> <span>Upcoming</span></div>
@@ -378,11 +371,10 @@
             <span id="add-folder-trigger" style="cursor:pointer; font-size: 1.2rem;">+</span>
         </div>
         <div class="list-container" id="folders-container">
-            <!-- Dynamic Custom Folders go here -->
+            
         </div>
     </div>
 
-    <!-- Main Active Workspace View Wrapper -->
     <div id="main-content">
         <header>
             <button class="menu-toggle" id="sidebar-toggle">☰</button>
@@ -390,10 +382,9 @@
             <button class="btn" id="add-section-btn" style="padding: 6px 12px; font-size: 0.85rem;">+ New Section</button>
         </header>
 
-        <!-- New Task Creation Row Component -->
         <div class="task-input-container">
             <div class="input-row">
-                <input type="text" id="task-input" placeholder="Add a new task assignment...">
+                <input type="text" id="task-input" placeholder="Add a new task...">
                 <select id="task-section-select">
                     <option value="">General Tasks</option>
                 </select>
@@ -402,27 +393,24 @@
             </div>
         </div>
 
-        <!-- Rendered Active Task List Row Canvas -->
         <div id="task-list"></div>
 
-        <!-- Settings Drawer Overlay View Container -->
         <div id="settings-panel">
             <h3 style="margin-bottom: 15px;">Preferences</h3>
             <div class="settings-row">
-                <span>Midnight Dark Theme</span>
+                <span>Dark Mode</span>
                 <input type="checkbox" id="midnight-toggle">
             </div>
             <div class="settings-row">
-                <span>Daily Auto Rollover Engine</span>
+                <span>Daily Auto Change</span>
                 <input type="checkbox" id="rollover-toggle" checked>
             </div>
-            <button class="btn" style="margin-top: 15px; width: 100%; background: #bd2130;" id="wipe-cache-btn">Wipe Local Cache Storage</button>
-            <button class="btn" style="margin-top: 10px; width: 100%;" id="close-settings-btn">Close Drawer View</button>
+            <button class="btn" style="margin-top: 15px; width: 100%; background: #bd2130;" id="wipe-cache-btn">Wipe All Info ⚠️</button>
+            <button class="btn" style="margin-top: 10px; width: 100%;" id="close-settings-btn">Close Settings</button>
         </div>
     </div>
 
     <script>
-        // State Machine Initial Store Objects Loading from Browser Cache Hooks
         let state = {
             folders: JSON.parse(localStorage.getItem('stuff_folders')) || [{id: 'f1', name: 'Personal', emoji: '📁'}, {id: 'f2', name: 'Work', emoji: '💼'}],
             sections: JSON.parse(localStorage.getItem('stuff_sections')) || [
@@ -435,14 +423,12 @@
             midnightMode: JSON.parse(localStorage.getItem('stuff_midnight')) || false
         };
 
-        // Initialize App UI States & Explicit Event Bindings
         function initApp() {
             if (state.midnightMode) {
                 document.body.classList.add('midnight-mode');
                 document.getElementById('midnight-toggle').checked = true;
             }
             
-            // Programmatic Event Bindings to fix unclickable elements
             document.getElementById('settings-trigger').addEventListener('click', toggleSettings);
             document.getElementById('close-settings-btn').addEventListener('click', toggleSettings);
             document.getElementById('add-folder-trigger').addEventListener('click', createNewFolder);
@@ -452,7 +438,6 @@
             document.getElementById('midnight-toggle').addEventListener('change', toggleMidnightMode);
             document.getElementById('wipe-cache-btn').addEventListener('click', clearAllData);
             
-            // Bind timeline filter rows
             document.querySelectorAll('#days-filters-container .sidebar-item').forEach(item => {
                 item.addEventListener('click', function() {
                     setDayFilter(this.getAttribute('data-filter'), this);
@@ -464,8 +449,7 @@
             renderTasks();
             setupAutoRollover();
         }
-
-        // Setup Automatic Rollover System Engine Lookahead
+        
         function setupAutoRollover() {
             const lastCheck = localStorage.getItem('stuff_last_date_check');
             const todayStr = new Date().toISOString().split('T')[0];
@@ -473,7 +457,7 @@
             if (lastCheck && lastCheck !== todayStr && document.getElementById('rollover-toggle').checked) {
                 state.tasks.forEach(task => {
                     if (!task.completed && task.date && task.date < todayStr) {
-                        task.date = todayStr; // Automatically push past unfinished tasks to current today
+                        task.date = todayStr; 
                     }
                 });
                 saveToLocalStorage();
@@ -488,7 +472,6 @@
             localStorage.setItem('stuff_midnight', JSON.stringify(state.midnightMode));
         }
 
-        // Render Folder Engine Elements dynamically into the DOM
         function renderFolders() {
             const container = document.getElementById('folders-container');
             container.innerHTML = '';
@@ -507,7 +490,6 @@
                     <span class="delete-btn">⌫</span>
                 `;
                 
-                // Separate binding for internal delete to prevent event bubble popping
                 div.querySelector('.delete-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
                     deleteFolder(folder.id);
@@ -519,7 +501,7 @@
         }
 
         function createNewFolder() {
-            const emoji = prompt("Choose an emoji symbol icon for this folder:", "📁");
+            const emoji = prompt("Choose an icon for this folder:", "📁");
             const name = prompt("Enter custom folder name:");
             if (!name) return;
             
@@ -538,7 +520,7 @@
 
         function deleteFolder(id) {
             if (state.folders.length <= 1) return alert("You must preserve at least one active workspace folder.");
-            if (confirm("Permanently drop this folder element along with its sections and tasks?")) {
+            if (confirm("This folder and everything will be deleted. Continue?")) {
                 state.folders = state.folders.filter(f => f.id !== id);
                 state.sections = state.sections.filter(s => s.folderId !== id);
                 state.tasks = state.tasks.filter(t => t.folderId !== id);
@@ -552,7 +534,7 @@
 
         function createNewSection() {
             if (!state.currentFolderId) return alert("Please select or create a folder first.");
-            const name = prompt("Enter new section name (e.g. Trees, Fruit):");
+            const name = prompt("Enter new section name (e.g. Trees, Fruit, Favorites):");
             if (!name || !name.trim()) return;
 
             const newSection = {
@@ -580,7 +562,7 @@
 
         function updateSectionDropdown() {
             const select = document.getElementById('task-section-select');
-            select.innerHTML = '<option value="">General Tasks</option>';
+            select.innerHTML = '<option value="">General</option>';
             
             const folderSections = state.sections.filter(s => s.folderId === state.currentFolderId);
             folderSections.forEach(sec => {
@@ -622,7 +604,6 @@
             document.getElementById('current-view-title').innerText = `${folderName} / ${filterName}`;
         }
 
-        // Render Task Elements cleanly down organized by custom sections
         function renderTasks() {
             updateHeaderTitle();
             const container = document.getElementById('task-list');
@@ -633,7 +614,6 @@
             tomorrowObj.setDate(tomorrowObj.getDate() + 1);
             const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
 
-            // Primary Pipeline Filtering Engine Layout Logic
             let filteredTasks = state.tasks.filter(t => t.folderId === state.currentFolderId);
 
             if (state.currentDayFilter === 'today') {
@@ -650,13 +630,11 @@
 
             const currentFolderSections = state.sections.filter(s => s.folderId === state.currentFolderId);
             
-            // 1. Render Registered Sections
             currentFolderSections.forEach(section => {
                 const sectionTasks = filteredTasks.filter(t => t.sectionId === section.id);
                 renderTaskGroup(container, section.name, section.id, sectionTasks, todayStr, tomorrowStr);
             });
 
-            // 2. Render Unassigned / General Tasks Group
             const generalTasks = filteredTasks.filter(t => !t.sectionId || !currentFolderSections.some(s => s.id === t.sectionId));
             if (generalTasks.length > 0 || currentFolderSections.length === 0) {
                 renderTaskGroup(container, "General Tasks", "", generalTasks, todayStr, tomorrowStr);
@@ -664,7 +642,7 @@
         }
 
         function renderTaskGroup(parentContainer, groupName, sectionId, groupTasks, todayStr, tomorrowStr) {
-            if (groupTasks.length === 0 && sectionId === "") return; // Hide general group if empty when custom sections exist
+            if (groupTasks.length === 0 && sectionId === "") return; 
 
             const groupWrapper = document.createElement('div');
             groupWrapper.className = 'task-group-section';
@@ -749,7 +727,6 @@
             }
         }
 
-        // Inline Text Editing Engine
         function editTaskInline(id) {
             const task = state.tasks.find(t => t.id === id);
             if (!task) return;
@@ -782,7 +759,7 @@
         }
 
         function clearAllData() {
-            if (confirm("Completely wipe out all browser cache storage records? This cannot be undone.")) {
+            if (confirm("Completely wipe all info saved? This cannot be undone. Continue?")) {
                 localStorage.clear();
                 location.reload();
             }
